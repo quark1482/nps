@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="Generator" content="EditPlus®">
+<meta name="Description" content="USA Nearby Places Service">
+<link rel="stylesheet" href="/styles/index.css">
+<title>USA nearby places</title>
+</head>
+
+<body>
+
+    <script>
+        document.addEventListener(
+            'DOMContentLoaded',
+            function() {
+                const frmSearch   = document.getElementById('frmSearch');
+                const lstCities   = document.getElementById('lstCities');
+                const txtLocation = document.getElementById('txtLocation');
+                const txtId       = document.getElementById('txtId');
+                const lblZoom     = document.getElementById('lblZoom');
+                const rngZoom     = document.getElementById('rngZoom');
+                const txtEmail    = document.getElementById('txtEmail');
+                const divResults  = document.getElementById('divResults');
+                txtLocation.addEventListener(
+                    'input',
+                    async function () {
+                        try {
+                            lstCities.innerHTML  = '';
+                            divResults.innerHTML = '';
+                            const r = await fetch(`/locsearch?l=${txtLocation.value}`);
+                            const l = await r.json();
+                            l.forEach(
+                                function(item) {
+                                    const o = document.createElement('option');
+                                    o.value = `${item.city}, ${item.state_name}`;
+                                    o.setAttribute('data-id', item.id);
+                                    lstCities.appendChild(o);
+                                }
+                            );
+                            txtLocation.setCustomValidity('');
+                        }
+                        catch (err) {
+                            console.error(`inputHandler() failed: ${err.message}`);
+                        }
+                    }
+                );
+                lblZoom.textContent = `Zoom: ${rngZoom.value}`;
+                rngZoom.addEventListener(
+                    'input',
+                    function() {
+                        divResults.innerHTML = '';
+                        lblZoom.textContent = `Zoom: ${rngZoom.value}`;
+                    }
+                );
+                frmSearch.addEventListener(
+                    'submit',
+                    function (event) {
+                        try {
+                            event.preventDefault();
+                            const selection = Array.from(lstCities.options).find(
+                                function(option) {
+                                    return option.value === txtLocation.value;
+                                }
+                            );
+                            if (selection) {
+                                txtId.value = selection.getAttribute('data-id');
+                                divResults.innerHTML = '<p>Looking for nearby places...</p>';
+                                const prevState = {
+                                    location: txtLocation.value,
+                                    cities:   lstCities.innerHTML,
+                                    zoom:     rngZoom.value,
+                                    email:    txtEmail.value
+                                };
+                                sessionStorage.setItem('prevState', JSON.stringify(prevState));
+                                txtLocation.setCustomValidity('');
+                                frmSearch.submit();
+                            } else {
+                                txtLocation.focus();
+                                txtLocation.select();
+                                txtLocation.setCustomValidity('Please enter a valid location');
+                                txtLocation.reportValidity();
+                            }
+                        }
+                        catch (err) {
+                            console.error(`submitHandler() failed: ${err.message}`);
+                        }
+                    }
+                );
+                if (sessionStorage.getItem('prevState')) {
+                    const prevState = JSON.parse(sessionStorage.getItem('prevState'));
+                    txtLocation.value   = prevState.location;
+                    lstCities.innerHTML = prevState.cities;
+                    rngZoom.value       = prevState.zoom;
+                    lblZoom.textContent = `Zoom: ${rngZoom.value}`;
+                    txtEmail.value      = prevState.email;
+                }
+                txtLocation.focus();
+                txtLocation.select();
+            }
+        );
+    </script>
+
+    <form id=frmSearch method=post action='/'>
+        <div>
+            <label for=txtLocation>Location:</label>
+            <input list=lstCities name=location id=txtLocation style='width: 100%' required>
+            <datalist id=lstCities>
+            </datalist>
+            <input type=hidden name=id id=txtId>
+        </div>
+        <div>
+            <label for=rngZoom id=lblZoom>Zoom:</label>
+            <input type=range min=1 max=50 value=16 name=zoom id=rngZoom>
+        </div>
+        <div>
+            <label for txtEmail>e-mail:</label>
+            <input type=email name=email id=txtEmail>
+        </div>
+        <br>
+        <div>
+            <input type=submit value=Search>
+        </div>
+    </form>
+    <br>
+    <div align=center id=divResults>
+    <!-- prevResuts -->
+    </div>
+
+</body>
+
+</html>
