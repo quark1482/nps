@@ -16,8 +16,7 @@ Combines the previous features in a simple HTML form to query and browse results
 Usage
 -----
 
-Build + run, and point your browser to ` http://localhost:4321 ` (if running locally) or the URL the actor shows in the log.
-<br>E.g., something like ` https://h12jc3izjdpp.runs.apify.net/ `.
+Build + run, and point your browser to ` http://localhost:4321 ` (if running locally) or the URL the actor shows in the log. E.g., something like ` https://h12jc3izjdpp.runs.apify.net/ `.
 
 
 Dependencies
@@ -33,4 +32,4 @@ Dependencies
 
 * [request-ip](https://github.com/pbojinov/request-ip)
 <br>For getting the client's IP address (running as middleware for express).
-<br>`npm install request-ip`
+<br>`npm i request-ip`
